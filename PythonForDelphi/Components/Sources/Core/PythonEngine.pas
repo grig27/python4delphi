@@ -136,6 +136,7 @@ const
     (DllName: 'python31.dll'; RegVersion: '3.1'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'python32.dll'; RegVersion: '3.2'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'python33.dll'; RegVersion: '3.3'; APIVersion: 1013; CanUseLatest: True),
+    (DllName: 'python34.dll'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True),
     (DllName: 'python34.dll'; RegVersion: '3.4'; APIVersion: 1013; CanUseLatest: True) );
 {$ENDIF}
 {$IFDEF LINUX}
