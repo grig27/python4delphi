@@ -3596,6 +3596,8 @@ end;
 
 function TPythonInterface.GetInitialized: Boolean;
 begin
+  if Self = nil then Exit;
+  
   if Assigned(Py_IsInitialized) then
     Result := Py_IsInitialized() <> 0
   else
