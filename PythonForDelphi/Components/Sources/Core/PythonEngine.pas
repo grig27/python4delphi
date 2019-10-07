@@ -1492,6 +1492,7 @@ type
 type
   TDynamicDll = class(TComponent)
   private
+    FFindPythonVersionRegistered: Boolean;
     function IsAPIVersionStored: Boolean;
     function IsDllNameStored: Boolean;
     function IsRegVersionStored: Boolean;
@@ -1543,6 +1544,8 @@ type
     property FatalAbort :  Boolean read FFatalAbort write FFatalAbort default True;
     property FatalMsgDlg : Boolean read FFatalMsgDlg write FFatalMsgDlg default True;
     property UseLastKnownVersion: Boolean read FUseLastKnownVersion write FUseLastKnownVersion default True;
+    property FindPythonVersionRegistered : Boolean read FFindPythonVersionRegistered
+      write FFindPythonVersionRegistered default True;
     property OnAfterLoad : TNotifyEvent read FOnAfterLoad write FOnAfterLoad;
     property OnBeforeLoad : TNotifyEvent read FOnBeforeLoad write FOnBeforeLoad;
     property OnBeforeUnload : TNotifyEvent read FOnBeforeUnload write FOnBeforeUnload;
@@ -3375,7 +3378,8 @@ begin
 
   {$IFDEF MSWINDOWS}
   if DLLPath = '' then begin
-    IsPythonVersionRegistered(RegVersion, Result, AllUserInstall);
+    if FindPythonVersionRegistered then
+      IsPythonVersionRegistered(RegVersion, Result, AllUserInstall);
   end;
   {$ENDIF}
 
