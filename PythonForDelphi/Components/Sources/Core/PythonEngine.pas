@@ -1442,6 +1442,7 @@ type
 type
   TDynamicDll = class(TComponent)
   private
+    FFindPythonVersionRegistered: Boolean;
     function IsAPIVersionStored: Boolean;
     function IsDllNameStored: Boolean;
     function IsRegVersionStored: Boolean;
@@ -1493,6 +1494,8 @@ type
     property FatalAbort :  Boolean read FFatalAbort write FFatalAbort default True;
     property FatalMsgDlg : Boolean read FFatalMsgDlg write FFatalMsgDlg default True;
     property UseLastKnownVersion: Boolean read FUseLastKnownVersion write FUseLastKnownVersion default True;
+    property FindPythonVersionRegistered : Boolean read FFindPythonVersionRegistered
+      write FFindPythonVersionRegistered default True;
     property OnAfterLoad : TNotifyEvent read FOnAfterLoad write FOnAfterLoad;
     property OnBeforeLoad : TNotifyEvent read FOnBeforeLoad write FOnBeforeLoad;
     property OnBeforeUnload : TNotifyEvent read FOnBeforeUnload write FOnBeforeUnload;
@@ -3338,7 +3341,8 @@ begin
 
   {$IFDEF MSWINDOWS}
   if DLLPath = '' then begin
-    IsPythonVersionRegistered(RegVersion, Result, AllUserInstall);
+    if FindPythonVersionRegistered then
+      IsPythonVersionRegistered(RegVersion, Result, AllUserInstall);
   end;
   {$ENDIF}
 
@@ -3557,6 +3561,16 @@ end;
 function  TPythonInterface.GetQuitMessage : string;
 begin
   Result := Format( 'Python could not be properly initialized. We must quit.', [DllName]);
+end;
+
+function TPythonInterface.GetInitialized: Boolean;
+begin
+  if Self = nil then Exit;
+  
+  if Assigned(Py_IsInitialized) then
+    Result := Py_IsInitialized() <> 0
+  else
+    Result := FInitialized;
 end;
 
 procedure TPythonInterface.CheckPython;
@@ -5296,12 +5310,12 @@ end;
 
 procedure TPythonEngine.ExecStrings( strings : TStrings );
 begin
-  Py_XDecRef( Run_CommandAsObject( EncodeString(strings.Text) , file_input ) );
+  Py_XDecRef( Run_CommandAsObject( CleanString( EncodeString(strings.Text) ), file_input ) );
 end;
 
 function TPythonEngine.EvalStrings( strings : TStrings ) : PPyObject;
 begin
-  Result := Run_CommandAsObject( EncodeString(strings.Text) , eval_input );
+  Result := Run_CommandAsObject( CleanString( EncodeString(strings.Text) ), eval_input );
 end;
 
 procedure TPythonEngine.ExecString(const command : AnsiString; locals, globals : PPyObject );
@@ -5311,7 +5325,7 @@ end;
 
 procedure TPythonEngine.ExecStrings( strings : TStrings; locals, globals : PPyObject );
 begin
-  Py_XDecRef( Run_CommandAsObjectWithDict( EncodeString(strings.Text), file_input, locals, globals ) );
+  Py_XDecRef( Run_CommandAsObjectWithDict( CleanString( EncodeString(strings.Text) ), file_input, locals, globals ) );
 end;
 
 function TPythonEngine.EvalString( const command : AnsiString; locals, globals : PPyObject ) : PPyObject;
@@ -5321,12 +5335,12 @@ end;
 
 function TPythonEngine.EvalStrings( strings : TStrings; locals, globals : PPyObject ) : PPyObject;
 begin
-  Result := Run_CommandAsObjectWithDict( EncodeString(strings.Text), eval_input, locals, globals );
+  Result := Run_CommandAsObjectWithDict( CleanString( EncodeString(strings.Text) ), eval_input, locals, globals );
 end;
 
 function TPythonEngine.EvalStringsAsStr( strings : TStrings ) : string;
 begin
-  Result := Run_CommandAsString( EncodeString(strings.Text), eval_input );
+  Result := Run_CommandAsString( CleanString( EncodeString(strings.Text) ), eval_input );
 end;
 
 function TPythonEngine.CheckEvalSyntax( const str : AnsiString ) : Boolean;
