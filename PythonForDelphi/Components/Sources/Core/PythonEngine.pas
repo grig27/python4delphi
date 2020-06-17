@@ -1534,7 +1534,7 @@ type
     function  GetQuitMessage : string; override;
     procedure CheckPython;
     function  GetUnicodeTypeSuffix : string;
-
+    function GetInitialized: Boolean;
   public
     // define Python flags. See file pyDebug.h
     Py_DebugFlag: PInteger;
@@ -2280,6 +2280,7 @@ type
     property GlobalVars : PPyObject read FGlobalVars Write SetGlobalVars;
     property IOPythonModule: TObject read FIOPythonModule; {TPythonModule}
   published
+    //property LookOnInit
     property AutoFinalize: Boolean read FAutoFinalize write FAutoFinalize default True;
     property VenvPythonExe: string read FVenvPythonExe write FVenvPythonExe;
     property DatetimeConversionMode: TDatetimeConversionMode read FDatetimeConversionMode write FDatetimeConversionMode default DEFAULT_DATETIME_CONVERSION_MODE;
@@ -4783,6 +4784,7 @@ procedure TPythonEngine.Initialize;
   begin
      if VenvPythonExe <> '' then
        ExecString(AnsiString(Format(Script, [VenvPythonExe])));
+
     _path := PySys_GetObject('path');
     if Assigned(FOnSysPathInit) then
       FOnSysPathInit(Self, _path);
@@ -4837,6 +4839,7 @@ procedure TPythonEngine.Initialize;
 
 var
   i : Integer;
+  look: PyGILstate_STATE;
 begin
   if Assigned(gPythonEngine) then
     raise Exception.Create('There is already one instance of TPythonEngine running' );
@@ -4880,6 +4883,11 @@ begin
   else
     FInitialized := True;
   FIORedirected := False;
+
+  look := PyGILState_Ensure;
+
+  try
+
   InitSysPath;
   SetProgramArgs;
   GetTimeStructType;
@@ -4896,6 +4904,9 @@ begin
     ExecStrings( InitScript );
   if Assigned(FOnAfterInit) then
     FOnAfterInit(Self);
+  finally
+    PyGILState_Release(look);
+  end;
 end;
 
 procedure TPythonEngine.SetInitScript(Value: TStrings);
